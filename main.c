@@ -1,123 +1,110 @@
 #include <stdio.h>
-#include <stdint.h>
-#include <string.h>
 #include <libdragon.h>
 #include "audio_tests.h"
-
-// --- BARE METAL VI REGISTERS ---
-#define VI_BASE_REG     0xA4400000
-#define VI_STATUS_REG   (VI_BASE_REG + 0x00)
-#define VI_ORIGIN_REG   (VI_BASE_REG + 0x04)
-#define VI_WIDTH_REG    (VI_BASE_REG + 0x08)
-#define VI_INTR_REG     (VI_BASE_REG + 0x0C)
-#define VI_CURRENT_REG  (VI_BASE_REG + 0x10)
-#define VI_X_SCALE_REG  (VI_BASE_REG + 0x30)
-#define VI_Y_SCALE_REG  (VI_BASE_REG + 0x34)
-
-// --- AI REGISTERS ---
-#define AI_BASE          0xA4500000
-#define AI_STATUS_REG    (AI_BASE + 0x0C)
-
-// --- MANUAL FRAMEBUFFER ---
-// 16-bit color: 320x240 pixels * 2 bytes
-uint16_t screen_buffer[320 * 240] __attribute__((aligned(64)));
 
 static int menu_selection = 0;
 static int running_test = 0;
 
-static void write_reg(uint32_t reg, uint32_t value) {
-    *(volatile uint32_t *)reg = value;
-}
-
-static uint32_t read_reg(uint32_t reg) {
-    return *(volatile uint32_t *)reg;
-}
-
-// Manually setup NTSC 320x240 16bpp without the RSP
-void vi_init_manual(void) {
-    write_reg(VI_STATUS_REG,  0x0000320E); 
-    write_reg(VI_WIDTH_REG,   320);
-    write_reg(VI_INTR_REG,    0x200);
-    write_reg(VI_X_SCALE_REG, 0x00000200);
-    write_reg(VI_Y_SCALE_REG, 0x00000400);
-    
-    // Point VI to our manual buffer (Physical Address)
-    uint32_t phys_addr = (uint32_t)screen_buffer & 0x1FFFFFFF;
-    write_reg(VI_ORIGIN_REG, phys_addr);
-}
-
-void vi_wait_vsync(void) {
-    while (read_reg(VI_CURRENT_REG) < 10);
-    while (read_reg(VI_CURRENT_REG) > 10);
-}
-
-static void draw_menu(int seq_count, const test_sequence_t *sequences) {
-    console_clear();
-    printf("N64 Audio Test (BARE METAL MODE)\n");
-    printf("================================\n\n");
-    for (int i = 0; i < seq_count; i++) {
-        if (i == menu_selection) printf("> %d. %s\n", i + 1, sequences[i].name);
-        else printf("  %d. %s\n", i + 1, sequences[i].name);
-    }
-}
-
-static void draw_running(int sequence_id) {
-    console_clear();
-    printf("Running Test #%d\n", sequence_id + 1);
-    printf("AI STATUS: 0x%08lX\n", read_reg(AI_STATUS_REG));
-    printf("\nPress B to return to menu\n");
-}
-
-int main(void) {
-    // 1. Initialize manual video & system essentials
-    vi_init_manual();
-    joypad_init();
-    timer_init();
-    
-    // 2. Setup the surface manually to match modern libdragon struct
-    surface_t my_surface = {
-        .buffer = screen_buffer,
-        .width = 320,
-        .height = 240,
-        .stride = 320 * 2,
-        .flags = 0 // Some versions use flags for format, we'll let console_init handle it
-    };
-    
-    // 3. Initialize console to use our manual surface
-    console_init();
-    console_set_render_mode(RENDER_MANUAL);
-
+static void draw_menu(surface_t *disp) {
     int seq_count;
     const test_sequence_t *sequences = get_test_sequences(&seq_count);
     
-    memset(screen_buffer, 0, sizeof(screen_buffer));
+    graphics_fill_screen(disp, 0);
+    
+    // Header
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
+    graphics_draw_text(disp, 40, 30, "N64 Audio Interface Test ROM");
+    graphics_draw_text(disp, 40, 50, "================================");
+    
+    for (int i = 0; i < seq_count; i++) {
+        // FIX: Determine and actually USE the color
+        uint32_t text_color;
+        if (i == menu_selection) {
+            text_color = graphics_make_color(255, 255, 0, 255); // Yellow
+        } else {
+            text_color = graphics_make_color(204, 204, 204, 255); // Grey
+        }
+        
+        // Apply the calculated selection color
+        graphics_set_color(text_color, 0);
+        
+        char line[64];
+        snprintf(line, sizeof(line), "%c %d. %s", 
+                 (i == menu_selection) ? '>' : ' ',
+                 i + 1, 
+                 sequences[i].name);
+        graphics_draw_text(disp, 60, 80 + i * 30, line);
+        
+        // Description - slightly darker
+        graphics_set_color(graphics_make_color(136, 136, 136, 255), 0);
+        graphics_draw_text(disp, 80, 95 + i * 30, sequences[i].description);
+    }
+    
+    // Footer
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
+    graphics_draw_text(disp, 40, 220, "Controls: D-Pad to select, A to run");
+}
 
+static void draw_running(surface_t *disp, int sequence_id) {
+    int seq_count;
+    const test_sequence_t *sequences = get_test_sequences(&seq_count);
+    
+    graphics_fill_screen(disp, 0);
+    // FIX: Removed 0xFFFFFFFF which caused the vertical bars
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
+    
+    char title[64];
+    snprintf(title, sizeof(title), "Running: %s", sequences[sequence_id].name);
+    graphics_draw_text(disp, 40, 30, title);
+    
+    graphics_draw_text(disp, 40, 60, "Test in progress...");
+    graphics_draw_text(disp, 40, 90, "Audio output active");
+    graphics_draw_text(disp, 40, 200, "Press B to return to menu");
+}
+
+int main(void) {
+    // RESOLUTION_320x240 @ 16BPP
+    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2, GAMMA_NONE, ANTIALIAS_RESAMPLE_FETCH_ALWAYS);
+    joypad_init();
+    timer_init();
+    
     while (1) {
-        joypad_poll();
-        joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-
+        surface_t *disp = display_get();
+        
+        int seq_count;
+        get_test_sequences(&seq_count);
+        
         if (!running_test) {
-            if (keys.d_up && menu_selection > 0) menu_selection--;
-            if (keys.d_down && menu_selection < seq_count - 1) menu_selection++;
+            draw_menu(disp);
+            
+            joypad_poll();
+            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+            
+            if (keys.d_up && menu_selection > 0) {
+                menu_selection--;
+            }
+            if (keys.d_down && menu_selection < seq_count - 1) {
+                menu_selection++;
+            }
             if (keys.a) {
                 running_test = 1;
-                run_test_sequence(menu_selection);
             }
-            draw_menu(seq_count, sequences);
+            
+            display_show(disp);
         } else {
-            if (keys.b) running_test = 0;
-            draw_running(menu_selection);
+            draw_running(disp, menu_selection);
+            
+            // FIX: Show the "Running test" screen BEFORE starting audio
+            display_show(disp);
+            
+            // Now run the audio test - user can see the screen while audio plays
+            run_test_sequence(menu_selection);
+            
+            joypad_poll();
+            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+            if (keys.b) {
+                running_test = 0;
+            }
         }
-
-        // 4. Render console to our manual buffer
-        // Note: Modern console_render usually renders to the current display.
-        // If this doesn't show up, we may need to manually draw text.
-        console_render(); 
-
-        // 5. Sync the Cache
-        data_cache_hit_writeback(screen_buffer, sizeof(screen_buffer));
-
-        // 6. Manual VSync
-        vi_wait_vsync();
     }
 }
