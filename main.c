@@ -83,13 +83,15 @@ int main(void) {
             run_test_sequence(menu_selection);
         }
         
-        surface_t *disp = display_try_get(); 
-        if (disp) {
-            graphics_fill_screen(disp, 0);
-            console_render();
-            display_show(disp);
-			// Safe, portable 1ms delay
-            wait_ms(1);
-        }       
+        // --- STABLE BUFFER GRAB ---
+        surface_t *disp = display_get(); // Block until ready (standard)
+        
+        graphics_fill_screen(disp, 0);
+        console_render();
+        display_show(disp);
+
+        // This replaces the manual register loops and wait_ms
+        // It's the "official" way to throttle in modern Libdragon
+        nbak_display_wait_rendered(); 
     }
 }
