@@ -93,6 +93,6 @@ int main(void) {
             display_show(disp);
         }
 
-        wait_ms(8); 
+        wait_ms(32); 
     }
 }
