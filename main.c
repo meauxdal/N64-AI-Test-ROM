@@ -78,6 +78,6 @@ int main(void) {
         display_show(disp);           // Flip the buffer
         
         // 5. The CPU Fix: Sync to 60Hz
-        display_wait_skip(); 
+        display_wait_rendered()
     }
 }
