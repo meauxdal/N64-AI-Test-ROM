@@ -85,16 +85,20 @@ int main(void) {
         }
         
         // --- STABLE RENDERING ---
-        surface_t *disp = display_try_get(); // Does not panic if busy
+        surface_t *disp = display_try_get(); 
         if (disp) {
             graphics_fill_screen(disp, 0);
             console_render();
             display_show(disp);
         }
 
-        // Wait for V-Blank to start
-        while (!(io_read(VI_STATUS_REG) & 0x10)); 
-        // Wait for V-Blank to end (ensures we start the next frame at the top)
-        while ((io_read(VI_STATUS_REG) & 0x10)); 
+        // Use a safer vblank wait
+        // This checks if we are currently IN vblank (bit 0x10)
+        // If we are, we wait for it to end.
+        if (io_read(VI_STATUS_REG) & 0x10) {
+            while (io_read(VI_STATUS_REG) & 0x10);
+        }
+        // Then wait for the START of the next one
+        while (!(io_read(VI_STATUS_REG) & 0x10));
     }
 }
