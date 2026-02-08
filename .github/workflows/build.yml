@@ -18,9 +18,8 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/DragonMinded/libdragon.git /tmp/libdragon
           cd /tmp/libdragon
-          ./build.sh
-          # This is the "Delivery Signal": it moves the built files into /n64_toolchain
-          ./install.sh /n64_toolchain
+          # Pass the installation directory directly to the build script
+          ./build.sh $N64_INST
 
       - name: Build ROM
         run: make
