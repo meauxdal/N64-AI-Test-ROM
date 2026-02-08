@@ -1,0 +1,21 @@
+name: Build N64 ROM
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/dragonminded/libdragon:latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build ROM
+      run: make
+    
+    - name: Upload ROM
+      uses: actions/upload-artifact@v3
+      with:
+        name: audio-test-rom
+        path: '*.z64'
