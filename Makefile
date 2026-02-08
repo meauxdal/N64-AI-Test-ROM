@@ -1,13 +1,13 @@
 N64_INST = /n64_toolchain
-PROG = audio_test
+PROG_NAME = audio_test
 
-OBJS = main.o audio_tests.o
+all: $(PROG_NAME).z64
 
-all: $(PROG).z64
+$(PROG_NAME)_OBJS = main.o audio_tests.o
 
 include $(N64_INST)/include/n64.mk
 
 clean:
 	rm -f *.o *.elf *.z64
 
-.PHONY: clean
+.PHONY: all clean
