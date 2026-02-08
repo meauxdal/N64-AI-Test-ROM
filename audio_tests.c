@@ -1,6 +1,5 @@
 #include "audio_tests.h"
 #include <libdragon.h>
-#include <io.h>
 #include <regsinternal.h>
 #include <n64sys.h>
 
