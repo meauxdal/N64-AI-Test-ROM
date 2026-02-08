@@ -59,7 +59,7 @@ static void draw_running(surface_t *disp, int sequence_id) {
     
     graphics_draw_text(disp, 40, 60, "Test in progress...");
     graphics_draw_text(disp, 40, 90, "Audio output active");
-    graphics_draw_text(disp, 40, 200, "Press B to return to menu");
+    graphics_draw_text(disp, 40, 200, "Test will auto-return to menu when complete");
 }
 
 int main(void) {
@@ -94,17 +94,14 @@ int main(void) {
         } else {
             draw_running(disp, menu_selection);
             
-            // FIX: Show the "Running test" screen BEFORE starting audio
+            // Show the "Running test" screen BEFORE starting audio
             display_show(disp);
             
             // Now run the audio test - user can see the screen while audio plays
             run_test_sequence(menu_selection);
             
-            joypad_poll();
-            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-            if (keys.b) {
-                running_test = 0;
-            }
+            // FIX: Automatically return to menu after test completes
+            running_test = 0;
         }
     }
 }
