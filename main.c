@@ -92,6 +92,6 @@ int main(void) {
 
         // This replaces the manual register loops and wait_ms
         // It's the "official" way to throttle in modern Libdragon
-        nbak_display_wait_rendered(); 
+        nbak_display_wait_rendered();  
     }
 }
