@@ -2,6 +2,13 @@
 #include <libdragon.h>
 #include "audio_tests.h"
 
+#define VI_BASE          0xA4400000
+#define VI_STATUS_REG    (VI_BASE + 0x00)
+#define AI_BASE          0xA4500000
+#define AI_CONTROL_REG   (AI_BASE + 0x08)
+#define AI_STATUS_REG    (AI_BASE + 0x0C)
+#define AI_DACRATE_REG   (AI_BASE + 0x10)
+
 static int menu_selection = 0;
 static int running_test = 0;
 
