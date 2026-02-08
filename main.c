@@ -15,12 +15,10 @@ static int running_test = 0;
 static void draw_menu(int seq_count, const test_sequence_t *sequences) {
     console_clear();
     
-    // Header
     printf("N64 Audio Interface Test ROM\n");
     printf("================================\n\n");
     
     for (int i = 0; i < seq_count; i++) {
-        // Highlight logic
         if (i == menu_selection) {
             printf("> %d. %s\n", i + 1, sequences[i].name);
             printf("   %s\n\n", sequences[i].description);
@@ -29,7 +27,6 @@ static void draw_menu(int seq_count, const test_sequence_t *sequences) {
         }
     }
     
-    // Position footer at the bottom
     printf("\n\n\n\nControls: D-Pad to select, A to run");
 }
 
@@ -45,13 +42,12 @@ static void draw_running(int sequence_id) {
     printf("Wait for completion or\n");
     printf("Press B to return to menu\n");
 	
-	// Direct register reads (Mapped to KSEG1 non-cached for accuracy)
-    uint32_t ai_status = *(volatile uint32_t*)0xA450000C;
-    uint32_t ai_control = *(volatile uint32_t*)0xA4500008;
-    uint32_t ai_dacrate = *(volatile uint32_t*)0xA4500010;
+	uint32_t ai_status  = *(volatile uint32_t*)AI_STATUS_REG;
+    uint32_t ai_control = *(volatile uint32_t*)AI_CONTROL_REG;
+    uint32_t ai_dacrate = *(volatile uint32_t*)AI_DACRATE_REG;
 
     printf("\n--- AI HW REGISTERS ---\n");
-    printf("STATUS:  0x%08lX\n", ai_status);
+    printf("STATUS:  0x%08X\n", (unsigned int)ai_status);
     printf("CONTROL: 0x%08lX\n", ai_control);
     printf("DACRATE: 0x%08lX\n", ai_dacrate);
 }
@@ -75,16 +71,21 @@ int main(void) {
         if (!running_test) {
             if (keys.d_up && menu_selection > 0) menu_selection--;
             if (keys.d_down && menu_selection < seq_count - 1) menu_selection++;
-            if (keys.a) running_test = 1;
+            if (keys.a) {
+                running_test = 1;
+                run_test_sequence(menu_selection); // Start audio ONCE
+            }
             draw_menu(seq_count, sequences);
         } else {
-            if (keys.b) running_test = 0;
-            draw_running(menu_selection);
-            run_test_sequence(menu_selection);
+            if (keys.b) {
+                running_test = 0;
+                // Optional: add a function here to stop audio
+            }
+            draw_running(menu_selection); // Just update the UI and Registers
+            // REMOVED: run_test_sequence(menu_selection);
         }
         
-        // --- NO-FRILLS RENDERING ---
-        surface_t *disp = display_get(); // Standard call
+        surface_t *disp = display_try_get();
         
         if (disp) {
             graphics_fill_screen(disp, 0);
@@ -92,8 +93,6 @@ int main(void) {
             display_show(disp);
         }
 
-        // Manual throttle: 16ms is roughly 60fps.
-        // This stops the "Wait loop timed out" crash by slowing the CPU.
-        wait_ms(16); 
+        wait_ms(8); 
     }
 }
