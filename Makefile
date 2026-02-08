@@ -3,6 +3,8 @@ PROG = audio_test
 
 OBJS = main.o audio_tests.o
 
+all: $(PROG).z64
+
 include $(N64_INST)/include/n64.mk
 
 clean:

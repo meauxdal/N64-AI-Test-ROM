@@ -23,10 +23,13 @@ jobs:
           ls -l $N64_INST/include/n64.mk
 
       - name: Build ROM
-        run: make
+        run: |
+          # Explicitly call the target and increase verbosity
+          make all V=1
 
       - name: Upload ROM
         uses: actions/upload-artifact@v4
         with:
           name: n64-rom
-          path: '**/*.z64'
+          # Use a direct path if possible once we confirm where it lands
+          path: audio_test.z64
