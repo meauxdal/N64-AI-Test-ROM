@@ -86,7 +86,7 @@ static void draw_running(surface_t *disp, int sequence_id, int test_index) {
         graphics_draw_text(disp, 20, 80, "CURRENT TONE:");
         
         char freq[64];
-        snprintf(freq, sizeof(freq), "Frequency:  %u Hz", test->frequency);
+        snprintf(freq, sizeof(freq), "Frequency:  %lu Hz", (unsigned long)test->frequency);
         graphics_draw_text(disp, 30, 100, freq);
         
         char amp[64];
@@ -98,7 +98,7 @@ static void draw_running(surface_t *disp, int sequence_id, int test_index) {
         graphics_draw_text(disp, 30, 140, samples);
         
         char duration[64];
-        snprintf(duration, sizeof(duration), "Duration:   %u ms", test->wait_ms);
+        snprintf(duration, sizeof(duration), "Duration:   %lu ms", (unsigned long)test->wait_ms);
         graphics_draw_text(disp, 30, 160, duration);
         
         // Visual indicator for amplitude
