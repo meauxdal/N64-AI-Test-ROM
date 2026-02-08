@@ -24,4 +24,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: n64-rom
-          path: '*.z64'
+          path: '*.z64' 
