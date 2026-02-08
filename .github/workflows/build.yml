@@ -18,8 +18,9 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/DragonMinded/libdragon.git /tmp/libdragon
           cd /tmp/libdragon
-          # Pass the installation directory directly to the build script
           ./build.sh $N64_INST
+          # Verification Signal: Check if n64.mk actually exists now
+          ls -l $N64_INST/include/n64.mk
 
       - name: Build ROM
         run: make

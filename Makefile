@@ -1,7 +1,6 @@
 N64_INST = /n64_toolchain
 PROG_NAME = audio_test
-
-audio_test_OBJS = main.o audio_tests.o
+$(PROG_NAME)_OBJS = main.o audio_tests.o
 
 all: $(PROG_NAME).z64
 
