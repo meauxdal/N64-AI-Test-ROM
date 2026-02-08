@@ -40,10 +40,9 @@ static void draw_running(int sequence_id) {
 }
 
 int main(void) {
-    // 1. Initialize hardware
-    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2, GAMMA_NONE, ANTIALIAS_RESAMPLE_FETCH_ALWAYS);
+    // 2 buffers is standard, but let's ensure we are initialized correctly
+    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, ANTIALIAS_RESAMPLE_FETCH_ALWAYS);
     
-    // 2. Setup Console (Improved Video)
     console_init();
     console_set_render_mode(RENDER_MANUAL);
     
@@ -54,7 +53,6 @@ int main(void) {
     const test_sequence_t *sequences = get_test_sequences(&seq_count);
     
     while (1) {
-        // 3. Logic & Input
         joypad_poll();
         joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
         
@@ -62,22 +60,24 @@ int main(void) {
             if (keys.d_up && menu_selection > 0) menu_selection--;
             if (keys.d_down && menu_selection < seq_count - 1) menu_selection++;
             if (keys.a) running_test = 1;
-            
             draw_menu(seq_count, sequences);
         } else {
             if (keys.b) running_test = 0;
-            
             draw_running(menu_selection);
             run_test_sequence(menu_selection);
         }
         
-        // 4. Render to screen
-        surface_t *disp = display_get();
-        graphics_fill_screen(disp, 0); 
-        console_render();             
-        display_show(disp);           
-        
-        // THE UNIVERSAL SYNC CALL
-        while (!display_get()); 
+        // --- STABLE RENDERING ---
+        surface_t *disp = display_lock(); // Use lock instead of get
+        if (disp) {
+            graphics_fill_screen(disp, 0);
+            console_render();
+            display_show(disp);
+        }
+
+        // Standard way to wait for the next frame in older Libdragon
+        // without causing a timeout crash.
+        extern void wait_vsync(void); 
+        wait_vsync(); 
     }
 }
