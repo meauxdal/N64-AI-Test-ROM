@@ -88,8 +88,8 @@ int main(void) {
             graphics_fill_screen(disp, 0);
             console_render();
             display_show(disp);
-			// Sleep for ~1ms to let the emulator breathe
-            timer_pause(TICKS_FROM_MS(1));
+			// Safe, portable 1ms delay
+            wait_ms(1);
         }       
     }
 }
