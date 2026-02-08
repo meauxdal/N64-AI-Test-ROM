@@ -37,6 +37,16 @@ static void draw_running(int sequence_id) {
     printf("Audio output active\n\n");
     printf("Wait for completion or\n");
     printf("Press B to return to menu\n");
+	
+	// Direct register reads (Mapped to KSEG1 non-cached for accuracy)
+    uint32_t ai_status = *(volatile uint32_t*)0xA450000C;
+    uint32_t ai_control = *(volatile uint32_t*)0xA4500008;
+    uint32_t ai_dacrate = *(volatile uint32_t*)0xA4500010;
+
+    printf("\n--- AI HW REGISTERS ---\n");
+    printf("STATUS:  0x%08lX\n", ai_status);
+    printf("CONTROL: 0x%08lX\n", ai_control);
+    printf("DACRATE: 0x%08lX\n", ai_dacrate);
 }
 
 int main(void) {
@@ -68,16 +78,16 @@ int main(void) {
         }
         
         // --- STABLE RENDERING ---
-        surface_t *disp = display_lock(); // Use lock instead of get
+        surface_t *disp = display_try_get(); // Does not panic if busy
         if (disp) {
             graphics_fill_screen(disp, 0);
             console_render();
             display_show(disp);
         }
 
-        // Standard way to wait for the next frame in older Libdragon
-        // without causing a timeout crash.
-        extern void wait_vsync(void); 
-        wait_vsync(); 
+        // Wait for V-Blank to start
+        while (!(io_read(VI_STATUS_REG) & 0x10)); 
+        // Wait for V-Blank to end (ensures we start the next frame at the top)
+        while ((io_read(VI_STATUS_REG) & 0x10)); 
     }
 }
