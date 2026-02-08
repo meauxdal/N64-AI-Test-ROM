@@ -56,9 +56,8 @@ static void draw_running(int sequence_id) {
     printf("DACRATE: 0x%08lX\n", ai_dacrate);
 }
 
-int main(void) {
-    // 2 buffers is standard, but let's ensure we are initialized correctly
-    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 3, GAMMA_NONE, ANTIALIAS_RESAMPLE_FETCH_ALWAYS);
+int main(void) {    
+    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2, GAMMA_NONE, ANTIALIAS_RESAMPLE_FETCH_ALWAYS);
     
     console_init();
     console_set_render_mode(RENDER_MANUAL);
@@ -84,21 +83,13 @@ int main(void) {
             run_test_sequence(menu_selection);
         }
         
-        // --- STABLE RENDERING ---
         surface_t *disp = display_try_get(); 
         if (disp) {
             graphics_fill_screen(disp, 0);
             console_render();
             display_show(disp);
-        }
-
-        // Use a safer vblank wait
-        // This checks if we are currently IN vblank (bit 0x10)
-        // If we are, we wait for it to end.
-        if (io_read(VI_STATUS_REG) & 0x10) {
-            while (io_read(VI_STATUS_REG) & 0x10);
-        }
-        // Then wait for the START of the next one
-        while (!(io_read(VI_STATUS_REG) & 0x10));
+			// Sleep for ~1ms to let the emulator breathe
+            timer_pause(TICKS_FROM_MS(1));
+        }       
     }
 }
