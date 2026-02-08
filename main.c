@@ -83,17 +83,14 @@ int main(void) {
             run_test_sequence(menu_selection);
         }
         
-        // --- STABLE RENDERING ---
-        surface_t *disp = display_get(); 
+        // --- THE "ARES-SAFE" RENDER ---
+        surface_t *disp = display_get(); // This blocks if queue is full
         
-        if (disp) {
-            graphics_fill_screen(disp, 0);
-            console_render();
-            display_show(disp);
-        }
+        graphics_fill_screen(disp, 0);
+        console_render();
+        display_show(disp);
 
-        // FORCE a 60fps cap (1000ms / 60 = 16.6ms)
-        // This stops the "Wait loop timed out" crash by slowing the CPU down.
-        wait_ms(17); 
+        // This is the crucial safety valve
+        display_wait_rendered(); 
     }
 }
