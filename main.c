@@ -82,15 +82,15 @@ int main(void) {
             draw_running(menu_selection);
             run_test_sequence(menu_selection);
         }
-        
-        // --- THE "ARES-SAFE" RENDER ---
-        surface_t *disp = display_get(); // This blocks if queue is full
-        
-        graphics_fill_screen(disp, 0);
-        console_render();
-        display_show(disp);
+		
+        while(io_read(VI_STATUS_REG) & 0x10);
+        while(!(io_read(VI_STATUS_REG) & 0x10));
 
-        // This is the crucial safety valve
-        display_wait_rendered(); 
+        surface_t *disp = display_get();
+        if (disp) {
+            graphics_fill_screen(disp, 0);
+            console_render();
+            display_show(disp);
+        }
     }
 }
