@@ -9,15 +9,24 @@ static void draw_menu(surface_t *disp) {
     int seq_count;
     const test_sequence_t *sequences = get_test_sequences(&seq_count);
     
-    graphics_fill_screen(disp, 0x000000FF);
+    graphics_fill_screen(disp, 0);
     
-    graphics_set_color(0xFFFFFFFF, 0x00000000);
+    // Header
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
     graphics_draw_text(disp, 40, 30, "N64 Audio Interface Test ROM");
     graphics_draw_text(disp, 40, 50, "================================");
     
     for (int i = 0; i < seq_count; i++) {
-        uint32_t color = (i == menu_selection) ? 0xFFFF00FF : 0xCCCCCCFF;
-        graphics_set_color(color, 0x00000000);
+        // FIX: Determine and actually USE the color
+        uint32_t text_color;
+        if (i == menu_selection) {
+            text_color = graphics_make_color(255, 255, 0, 255); // Yellow
+        } else {
+            text_color = graphics_make_color(204, 204, 204, 255); // Grey
+        }
+        
+        // Apply the calculated selection color
+        graphics_set_color(text_color, 0);
         
         char line[64];
         snprintf(line, sizeof(line), "%c %d. %s", 
@@ -26,11 +35,13 @@ static void draw_menu(surface_t *disp) {
                  sequences[i].name);
         graphics_draw_text(disp, 60, 80 + i * 30, line);
         
-        graphics_set_color(0x888888FF, 0x00000000);
+        // Description - slightly darker
+        graphics_set_color(graphics_make_color(136, 136, 136, 255), 0);
         graphics_draw_text(disp, 80, 95 + i * 30, sequences[i].description);
     }
     
-    graphics_set_color(0xFFFFFFFF, 0x00000000);
+    // Footer
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
     graphics_draw_text(disp, 40, 220, "Controls: D-Pad to select, A to run");
 }
 
@@ -38,8 +49,9 @@ static void draw_running(surface_t *disp, int sequence_id) {
     int seq_count;
     const test_sequence_t *sequences = get_test_sequences(&seq_count);
     
-    graphics_fill_screen(disp, 0x000000FF);
-    graphics_set_color(0xFFFFFFFF, 0x00000000);
+    graphics_fill_screen(disp, 0);
+    // FIX: Removed 0xFFFFFFFF which caused the vertical bars
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
     
     char title[64];
     snprintf(title, sizeof(title), "Running: %s", sequences[sequence_id].name);
@@ -51,7 +63,8 @@ static void draw_running(surface_t *disp, int sequence_id) {
 }
 
 int main(void) {
-    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2, GAMMA_NONE, FILTERS_RESAMPLE);
+    // RESOLUTION_320x240 @ 16BPP
+    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2, GAMMA_NONE, ANTIALIAS_RESAMPLE_FETCH_ALWAYS);
     joypad_init();
     timer_init();
     
