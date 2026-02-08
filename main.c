@@ -82,15 +82,13 @@ int main(void) {
             draw_running(menu_selection);
             run_test_sequence(menu_selection);
         }
-		
-        while(io_read(VI_STATUS_REG) & 0x10);
-        while(!(io_read(VI_STATUS_REG) & 0x10));
-
+        
         surface_t *disp = display_get();
-        if (disp) {
-            graphics_fill_screen(disp, 0);
-            console_render();
-            display_show(disp);
-        }
+        
+        graphics_fill_screen(disp, 0);
+        console_render();
+        display_show(disp);
+        
+        display_wait_vblank(); 
     }
 }
