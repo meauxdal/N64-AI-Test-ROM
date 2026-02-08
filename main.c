@@ -83,15 +83,17 @@ int main(void) {
             run_test_sequence(menu_selection);
         }
         
-        // --- STABLE BUFFER GRAB ---
-        surface_t *disp = display_get(); // Block until ready (standard)
+        // --- STABLE RENDERING ---
+        surface_t *disp = display_get(); 
         
-        graphics_fill_screen(disp, 0);
-        console_render();
-        display_show(disp);
+        if (disp) {
+            graphics_fill_screen(disp, 0);
+            console_render();
+            display_show(disp);
+        }
 
-        // This replaces the manual register loops and wait_ms
-        // It's the "official" way to throttle in modern Libdragon
-        nbak_display_wait_rendered();  
+        // FORCE a 60fps cap (1000ms / 60 = 16.6ms)
+        // This stops the "Wait loop timed out" crash by slowing the CPU down.
+        wait_ms(17); 
     }
 }
