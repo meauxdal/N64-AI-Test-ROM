@@ -97,6 +97,29 @@ const test_sequence_t* get_test_sequences(int *count) {
     return sequences;
 }
 
+void run_single_test(int sequence_id, int test_index) {
+    if (sequence_id < 0 || sequence_id >= (int)(sizeof(sequences) / sizeof(test_sequence_t)))
+        return;
+    
+    test_sequence_t *seq = &sequences[sequence_id];
+    
+    if (test_index < 0 || test_index >= seq->test_count)
+        return;
+    
+    test_config_t *test = &seq->tests[test_index];
+    
+    uint32_t dacrate, bitrate;
+    calculate_dac_rates(test->frequency, &dacrate, &bitrate);
+    
+    for (int j = 0; j < test->sample_count; j++) {
+        pcm_buffer[j] = test->amplitude;
+    }
+    
+    trigger_audio(pcm_buffer, test->sample_count, dacrate, bitrate);
+    wait_ai_busy();
+    wait_ms(test->wait_ms);
+}
+
 void run_test_sequence(int sequence_id) {
     if (sequence_id < 0 || sequence_id >= (int)(sizeof(sequences) / sizeof(test_sequence_t)))
         return;
@@ -106,17 +129,6 @@ void run_test_sequence(int sequence_id) {
     wait_ms(1000);
     
     for (int i = 0; i < seq->test_count; i++) {
-        test_config_t *test = &seq->tests[i];
-        
-        uint32_t dacrate, bitrate;
-        calculate_dac_rates(test->frequency, &dacrate, &bitrate);
-        
-        for (int j = 0; j < test->sample_count; j++) {
-            pcm_buffer[j] = test->amplitude;
-        }
-        
-        trigger_audio(pcm_buffer, test->sample_count, dacrate, bitrate);
-        wait_ai_busy();
-        wait_ms(test->wait_ms);
+        run_single_test(sequence_id, i);
     }
 }

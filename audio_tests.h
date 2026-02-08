@@ -21,6 +21,7 @@ typedef struct {
 } test_sequence_t;
 
 void calculate_dac_rates(uint32_t frequency, uint32_t *dacrate, uint32_t *bitrate);
+void run_single_test(int sequence_id, int test_index);
 void run_test_sequence(int sequence_id);
 const test_sequence_t* get_test_sequences(int *count);
 
