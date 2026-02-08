@@ -11,6 +11,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    - name: Install Libdragon Library
+      run: libdragon install
+
+    - name: Build ROM
+      run: make
+    
     - name: Locate Build Rules
       run: |
         find / -name "*.mk" | grep -v "kernel" | grep -v "modules"
