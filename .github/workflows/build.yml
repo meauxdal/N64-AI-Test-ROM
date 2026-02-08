@@ -11,8 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Build ROM
-      run: make
+    - name: Verify Build Environment
+      run: |
+        echo "N64_INST is: $N64_INST"
+        grep -n "include" Makefile
+        ls /usr/local/include/libdragon.mk
     
     - name: Upload ROM
       uses: actions/upload-artifact@v4
