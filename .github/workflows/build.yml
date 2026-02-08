@@ -6,10 +6,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/dragonminded/libdragon:toolchain-container
+      image: ghcr.io/dragonminded/libdragon:latest
     
     steps:
       - uses: actions/checkout@v3
+
+      - name: Provision Libdragon
+        run: |          
+          git clone --depth 1 https://github.com/DragonMinded/libdragon.git /tmp/libdragon
+          cd /tmp/libdragon
+          ./build.sh
 
       - name: Build ROM
         run: make
@@ -17,5 +23,5 @@ jobs:
       - name: Upload ROM
         uses: actions/upload-artifact@v4
         with:
-          name: audio-test-rom
+          name: n64-rom
           path: '*.z64'
