@@ -6,15 +6,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/dragonminded/libdragon:latest
-    
+      image: ghcr.io/dragonminded/libdragon:toolchain-container
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Audit Toolchain Bin
-      run: |
-        ls /n64_toolchain/bin
+      - uses: actions/checkout@v3
 
+      - name: Build ROM
+        run: make
+    
     - name: Build ROM
       run: make
            
