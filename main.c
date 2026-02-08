@@ -65,7 +65,7 @@ int main(void) {
             draw_menu(disp);
             
             joypad_poll();
-            struct controller_data keys = joypad_get_buttons_pressed();
+            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
             
             if (keys.c[0].up && menu_selection > 0) {
                 menu_selection--;
