@@ -11,10 +11,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Find Libdragon MK
+    - name: Final Path Verification
       run: |
-        find / -name "libdragon.mk" 2>/dev/null || echo "File not found anywhere"
-        find / -name "n64.mk" 2>/dev/null || echo "n64.mk not found anywhere"
+        ls /n64_toolchain/include/n64.mk
     
     - name: Upload ROM
       uses: actions/upload-artifact@v4
