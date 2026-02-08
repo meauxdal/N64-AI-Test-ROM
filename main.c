@@ -82,8 +82,8 @@ int main(void) {
             run_test_sequence(menu_selection);
             
             joypad_poll();
-            struct controller_data keys = joypad_get_buttons_pressed();
-            if (keys.c[0].B) {
+            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+            if (keys.b) {
                 running_test = 0;
             }
         }
