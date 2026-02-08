@@ -11,11 +11,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Find the Compiler
+    - name: Audit Toolchain Bin
       run: |
-        find / -name "mips64-elf-gcc"
-        echo "Check PATH:"
-        echo $PATH
+        ls /n64_toolchain/bin
 
     - name: Build ROM
       run: make
