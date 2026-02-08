@@ -73,11 +73,11 @@ int main(void) {
         
         // 4. Render to screen
         surface_t *disp = display_get();
-        graphics_fill_screen(disp, 0); // Clear backbuffer
-        console_render();             // Draw text onto the surface
-        display_show(disp);           // Flip the buffer
+        graphics_fill_screen(disp, 0); 
+        console_render();             
+        display_show(disp);           
         
-        // 5. The CPU Fix: Sync to 60Hz
-        display_wait_rendered()
+        // THE UNIVERSAL SYNC CALL
+        while (!display_get()); 
     }
 }
