@@ -67,13 +67,13 @@ int main(void) {
             joypad_poll();
             joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
             
-            if (keys.c[0].up && menu_selection > 0) {
+            if (keys.d_up && menu_selection > 0) {
                 menu_selection--;
             }
-            if (keys.c[0].down && menu_selection < seq_count - 1) {
+            if (keys.d_down && menu_selection < seq_count - 1) {
                 menu_selection++;
             }
-            if (keys.c[0].A) {
+            if (keys.a) {
                 running_test = 1;
             }
         } else {
