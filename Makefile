@@ -5,7 +5,7 @@ OBJS = main.o audio_tests.o
 
 all: $(PROG_NAME).z64
 
-include $(N64_INST)/include/libdragon.mk
+include /usr/local/include/libdragon.mk
 
 clean:
 	rm -f *.o *.z64 *.elf *.dfs
