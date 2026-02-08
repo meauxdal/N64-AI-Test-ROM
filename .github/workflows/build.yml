@@ -8,14 +8,19 @@ jobs:
     container:
       image: ghcr.io/dragonminded/libdragon:latest
     
+    env:
+      N64_INST: /n64_toolchain
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Provision Libdragon
-        run: |          
+        run: |
           git clone --depth 1 https://github.com/DragonMinded/libdragon.git /tmp/libdragon
           cd /tmp/libdragon
           ./build.sh
+          # This is the "Delivery Signal": it moves the built files into /n64_toolchain
+          ./install.sh /n64_toolchain
 
       - name: Build ROM
         run: make
@@ -24,4 +29,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: n64-rom
-          path: '*.z64' 
+          path: '*.z64'
