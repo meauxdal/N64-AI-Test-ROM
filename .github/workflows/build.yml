@@ -11,16 +11,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Install Libdragon Library
-      run: /n64_toolchain/bin/libdragon install
+    - name: Find the Compiler
+      run: |
+        find / -name "mips64-elf-gcc"
+        echo "Check PATH:"
+        echo $PATH
 
     - name: Build ROM
       run: make
-    
-    - name: Locate Build Rules
-      run: |
-        find / -name "*.mk" | grep -v "kernel" | grep -v "modules"
-    
+           
     - name: Upload ROM
       uses: actions/upload-artifact@v4
       with:
