@@ -2,6 +2,23 @@
 #include <libdragon.h>
 #include <regsinternal.h>
 #include <n64sys.h>
+#include <stdint.h>
+
+// Direct MIPS Uncached Address mapping
+#define AI_BASE          0xA4500000
+#define AI_DRAM_ADDR     (AI_BASE + 0x00)
+#define AI_LEN           (AI_BASE + 0x04)
+#define AI_CONTROL       (AI_BASE + 0x08)
+#define AI_STATUS        (AI_BASE + 0x0C)
+#define AI_DACRATE       (AI_BASE + 0x10)
+#define AI_BITRATE       (AI_BASE + 0x14)
+
+// Standard IO Accessors
+#define IO_READ(addr)       (*(volatile uint32_t*)(addr))
+#define IO_WRITE(addr, val) (*(volatile uint32_t*)(addr) = (val))
+
+// Helper for physical addresses (KSEG0 -> Physical)
+#define PhysicalAddr(addr) ((uint32_t)(addr) & 0x1FFFFFFF)
 
 #define PHYS_ADDR(x) ((uint32_t)(x) & 0x1FFFFFFF)
 
