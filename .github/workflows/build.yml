@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Install Libdragon Library
-      run: libdragon install
+      run: /n64_toolchain/bin/libdragon install
 
     - name: Build ROM
       run: make
