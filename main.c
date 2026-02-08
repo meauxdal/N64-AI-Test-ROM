@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <libdragon.h>
 #include "audio_tests.h"
 
@@ -51,20 +52,20 @@ static void draw_running(surface_t *disp, int sequence_id) {
 
 int main(void) {
     display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2, GAMMA_NONE, FILTERS_RESAMPLE);
-    controller_init();
+    joypad_init();
     timer_init();
-    
-    int seq_count;
-    get_test_sequences(&seq_count);
     
     while (1) {
         surface_t *disp = display_get();
         
+        int seq_count;
+        get_test_sequences(&seq_count);
+        
         if (!running_test) {
             draw_menu(disp);
             
-            controller_scan();
-            struct controller_data keys = get_keys_down();
+            joypad_poll();
+            struct controller_data keys = joypad_get_buttons_pressed();
             
             if (keys.c[0].up && menu_selection > 0) {
                 menu_selection--;
@@ -80,8 +81,8 @@ int main(void) {
             
             run_test_sequence(menu_selection);
             
-            controller_scan();
-            struct controller_data keys = get_keys_down();
+            joypad_poll();
+            struct controller_data keys = joypad_get_buttons_pressed();
             if (keys.c[0].B) {
                 running_test = 0;
             }

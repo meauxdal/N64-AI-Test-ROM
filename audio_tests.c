@@ -1,14 +1,14 @@
 #include "audio_tests.h"
 #include <libdragon.h>
-#include <string.h>
+#include <io.h>
+#include <regsinternal.h>
+#include <n64sys.h>
 
-#define AI_BASE 0xA4500000
-#define AI_DRAM_ADDR    (AI_BASE + 0x00)
-#define AI_LEN          (AI_BASE + 0x04)
-#define AI_CONTROL      (AI_BASE + 0x08)
-#define AI_STATUS       (AI_BASE + 0x0C)
-#define AI_DACRATE      (AI_BASE + 0x10)
-#define AI_BITRATE      (AI_BASE + 0x14)
+#define PHYS_ADDR(x) ((uint32_t)(x) & 0x1FFFFFFF)
+
+#ifndef CLOCKRATE
+#define CLOCKRATE 48681812
+#endif
 
 static int16_t pcm_buffer[8192] __attribute__((aligned(8)));
 
@@ -23,10 +23,12 @@ static void wait_ai_busy() {
 }
 
 static void trigger_audio(int16_t *buffer, uint32_t sample_count, uint32_t dacrate, uint32_t bitrate) {
+    data_cache_hit_writeback(buffer, sample_count * sizeof(int16_t));
+
     IO_WRITE(AI_DACRATE, dacrate - 1);
     IO_WRITE(AI_BITRATE, bitrate - 1);
     
-    IO_WRITE(AI_DRAM_ADDR, (uint32_t)buffer & 0x00FFFFFF);
+    IO_WRITE(AI_DRAM_ADDR, PhysicalAddr(buffer));
     IO_WRITE(AI_LEN, sample_count * 2);
     IO_WRITE(AI_CONTROL, 1);
 }
