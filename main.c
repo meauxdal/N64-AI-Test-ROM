@@ -83,12 +83,17 @@ int main(void) {
             run_test_sequence(menu_selection);
         }
         
-        surface_t *disp = display_get();
+        // --- NO-FRILLS RENDERING ---
+        surface_t *disp = display_get(); // Standard call
         
-        graphics_fill_screen(disp, 0);
-        console_render();
-        display_show(disp);
-        
-        display_wait_vblank(); 
+        if (disp) {
+            graphics_fill_screen(disp, 0);
+            console_render();
+            display_show(disp);
+        }
+
+        // Manual throttle: 16ms is roughly 60fps.
+        // This stops the "Wait loop timed out" crash by slowing the CPU.
+        wait_ms(16); 
     }
 }
