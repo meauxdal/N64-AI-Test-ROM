@@ -11,11 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Verify Build Environment
+    - name: Find Libdragon MK
       run: |
-        echo "N64_INST is: $N64_INST"
-        grep -n "include" Makefile
-        ls /usr/local/include/libdragon.mk
+        find / -name "libdragon.mk" 2>/dev/null || echo "File not found anywhere"
+        find / -name "n64.mk" 2>/dev/null || echo "n64.mk not found anywhere"
     
     - name: Upload ROM
       uses: actions/upload-artifact@v4
