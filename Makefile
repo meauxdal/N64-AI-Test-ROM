@@ -1,7 +1,7 @@
 N64_INST ?= /n64_toolchain
 PROG_NAME = kb_test
 
-kb_test_OBJS = main.o
+SRCS = main.c
 
 all: $(PROG_NAME).z64
 
