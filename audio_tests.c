@@ -33,6 +33,28 @@ static void wait_ai_busy() {
     while (IO_READ(AI_STATUS) & 0x40000001);
 }
 
+// Wait for specified time, but check for B button to abort
+// Returns 1 if B was pressed, 0 if wait completed normally
+static int wait_ms_with_abort(uint32_t ms) {
+    uint32_t elapsed = 0;
+    uint32_t check_interval = 50; // Check every 50ms
+    
+    while (elapsed < ms) {
+        uint32_t wait_time = (ms - elapsed < check_interval) ? (ms - elapsed) : check_interval;
+        wait_ms(wait_time);
+        elapsed += wait_time;
+        
+        // Check for B button
+        joypad_poll();
+        joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+        if (keys.b) {
+            return 1; // Aborted
+        }
+    }
+    
+    return 0; // Completed normally
+}
+
 static void trigger_audio(int16_t *buffer, uint32_t sample_count, uint32_t dacrate, uint32_t bitrate) {
     data_cache_hit_writeback(buffer, sample_count * sizeof(int16_t));
 
@@ -74,19 +96,19 @@ static test_config_t quick_test[] = {
 static test_sequence_t sequences[] = {
     {
         "Standard Sweep",
-        "24 tests: 4 freq x 2 amp x 3 lengths",
+        "24 tests (comprehensive)",
         standard_sweep,
         sizeof(standard_sweep) / sizeof(test_config_t)
     },
     {
         "Extended Sweep",
-        "12 tests: varied sample counts",
+        "12 tests (varied lengths)",
         extended_sweep,
         sizeof(extended_sweep) / sizeof(test_config_t)
     },
     {
         "Quick Test",
-        "4 tests: all frequencies, 16 samples",
+        "4 tests (all frequencies)",
         quick_test,
         sizeof(quick_test) / sizeof(test_config_t)
     }
@@ -95,6 +117,31 @@ static test_sequence_t sequences[] = {
 const test_sequence_t* get_test_sequences(int *count) {
     *count = sizeof(sequences) / sizeof(test_sequence_t);
     return sequences;
+}
+
+void run_single_test(int sequence_id, int test_index) {
+    if (sequence_id < 0 || sequence_id >= (int)(sizeof(sequences) / sizeof(test_sequence_t)))
+        return;
+    
+    test_sequence_t *seq = &sequences[sequence_id];
+    
+    if (test_index < 0 || test_index >= seq->test_count)
+        return;
+    
+    test_config_t *test = &seq->tests[test_index];
+    
+    uint32_t dacrate, bitrate;
+    calculate_dac_rates(test->frequency, &dacrate, &bitrate);
+    
+    for (int j = 0; j < test->sample_count; j++) {
+        pcm_buffer[j] = test->amplitude;
+    }
+    
+    trigger_audio(pcm_buffer, test->sample_count, dacrate, bitrate);
+    wait_ai_busy();
+    
+    // Wait with abort checking - if aborted, stop immediately
+    wait_ms_with_abort(test->wait_ms);
 }
 
 void run_test_sequence(int sequence_id) {
@@ -106,17 +153,6 @@ void run_test_sequence(int sequence_id) {
     wait_ms(1000);
     
     for (int i = 0; i < seq->test_count; i++) {
-        test_config_t *test = &seq->tests[i];
-        
-        uint32_t dacrate, bitrate;
-        calculate_dac_rates(test->frequency, &dacrate, &bitrate);
-        
-        for (int j = 0; j < test->sample_count; j++) {
-            pcm_buffer[j] = test->amplitude;
-        }
-        
-        trigger_audio(pcm_buffer, test->sample_count, dacrate, bitrate);
-        wait_ai_busy();
-        wait_ms(test->wait_ms);
+        run_single_test(sequence_id, i);
     }
 }

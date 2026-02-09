@@ -1,123 +1,187 @@
 #include <stdio.h>
-#include <stdint.h>
-#include <string.h>
 #include <libdragon.h>
 #include "audio_tests.h"
 
-// --- BARE METAL VI REGISTERS ---
-#define VI_BASE_REG     0xA4400000
-#define VI_STATUS_REG   (VI_BASE_REG + 0x00)
-#define VI_ORIGIN_REG   (VI_BASE_REG + 0x04)
-#define VI_WIDTH_REG    (VI_BASE_REG + 0x08)
-#define VI_INTR_REG     (VI_BASE_REG + 0x0C)
-#define VI_CURRENT_REG  (VI_BASE_REG + 0x10)
-#define VI_X_SCALE_REG  (VI_BASE_REG + 0x30)
-#define VI_Y_SCALE_REG  (VI_BASE_REG + 0x34)
-
-// --- AI REGISTERS ---
-#define AI_BASE          0xA4500000
-#define AI_STATUS_REG    (AI_BASE + 0x0C)
-
-// --- MANUAL FRAMEBUFFER ---
-// 16-bit color: 320x240 pixels * 2 bytes
-uint16_t screen_buffer[320 * 240] __attribute__((aligned(64)));
-
 static int menu_selection = 0;
 static int running_test = 0;
+static int current_test_index = 0;
 
-static void write_reg(uint32_t reg, uint32_t value) {
-    *(volatile uint32_t *)reg = value;
-}
-
-static uint32_t read_reg(uint32_t reg) {
-    return *(volatile uint32_t *)reg;
-}
-
-// Manually setup NTSC 320x240 16bpp without the RSP
-void vi_init_manual(void) {
-    write_reg(VI_STATUS_REG,  0x0000320E); 
-    write_reg(VI_WIDTH_REG,   320);
-    write_reg(VI_INTR_REG,    0x200);
-    write_reg(VI_X_SCALE_REG, 0x00000200);
-    write_reg(VI_Y_SCALE_REG, 0x00000400);
-    
-    // Point VI to our manual buffer (Physical Address)
-    uint32_t phys_addr = (uint32_t)screen_buffer & 0x1FFFFFFF;
-    write_reg(VI_ORIGIN_REG, phys_addr);
-}
-
-void vi_wait_vsync(void) {
-    while (read_reg(VI_CURRENT_REG) < 10);
-    while (read_reg(VI_CURRENT_REG) > 10);
-}
-
-static void draw_menu(int seq_count, const test_sequence_t *sequences) {
-    console_clear();
-    printf("N64 Audio Test (BARE METAL MODE)\n");
-    printf("================================\n\n");
-    for (int i = 0; i < seq_count; i++) {
-        if (i == menu_selection) printf("> %d. %s\n", i + 1, sequences[i].name);
-        else printf("  %d. %s\n", i + 1, sequences[i].name);
-    }
-}
-
-static void draw_running(int sequence_id) {
-    console_clear();
-    printf("Running Test #%d\n", sequence_id + 1);
-    printf("AI STATUS: 0x%08lX\n", read_reg(AI_STATUS_REG));
-    printf("\nPress B to return to menu\n");
-}
-
-int main(void) {
-    // 1. Initialize manual video & system essentials
-    vi_init_manual();
-    joypad_init();
-    timer_init();
-    
-    // 2. Setup the surface manually to match modern libdragon struct
-    surface_t my_surface = {
-        .buffer = screen_buffer,
-        .width = 320,
-        .height = 240,
-        .stride = 320 * 2,
-        .flags = 0 // Some versions use flags for format, we'll let console_init handle it
-    };
-    
-    // 3. Initialize console to use our manual surface
-    console_init();
-    console_set_render_mode(RENDER_MANUAL);
-
+static void draw_menu(surface_t *disp) {
     int seq_count;
     const test_sequence_t *sequences = get_test_sequences(&seq_count);
     
-    memset(screen_buffer, 0, sizeof(screen_buffer));
+    graphics_fill_screen(disp, 0);
+    
+    // Header
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
+    graphics_draw_text(disp, 20, 20, "N64 Audio Interface Test ROM");
+    graphics_draw_text(disp, 20, 35, "================================");
+    
+    for (int i = 0; i < seq_count; i++) {
+        // Determine and apply the color
+        uint32_t text_color;
+        if (i == menu_selection) {
+            text_color = graphics_make_color(255, 255, 0, 255); // Yellow
+        } else {
+            text_color = graphics_make_color(204, 204, 204, 255); // Grey
+        }
+        
+        graphics_set_color(text_color, 0);
+        
+        char line[64];
+        snprintf(line, sizeof(line), "%c %d. %s", 
+                 (i == menu_selection) ? '>' : ' ',
+                 i + 1, 
+                 sequences[i].name);
+        graphics_draw_text(disp, 30, 60 + i * 30, line);
+        
+        // Description - slightly darker
+        graphics_set_color(graphics_make_color(136, 136, 136, 255), 0);
+        graphics_draw_text(disp, 50, 75 + i * 30, sequences[i].description);
+    }
+    
+    // Footer
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
+    graphics_draw_text(disp, 20, 210, "D-Pad: Select  A: Run");
+}
 
+static void draw_running(surface_t *disp, int sequence_id, int test_index) {
+    int seq_count;
+    const test_sequence_t *sequences = get_test_sequences(&seq_count);
+    const test_sequence_t *seq = &sequences[sequence_id];
+    
+    graphics_fill_screen(disp, 0);
+    graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
+    
+    // Header
+    char title[64];
+    snprintf(title, sizeof(title), "%s", seq->name);
+    graphics_draw_text(disp, 20, 20, title);
+    
+    if (test_index < seq->test_count) {
+        // Progress indicator
+        graphics_set_color(graphics_make_color(200, 200, 200, 255), 0);
+        char progress[64];
+        snprintf(progress, sizeof(progress), "Test %d of %d", test_index + 1, seq->test_count);
+        graphics_draw_text(disp, 20, 40, progress);
+        
+        // Draw progress bar
+        int bar_x = 20;
+        int bar_y = 55;
+        int bar_width = 280;
+        int bar_height = 8;
+        
+        // Background bar (grey)
+        graphics_set_color(graphics_make_color(60, 60, 60, 255), 0);
+        graphics_draw_box(disp, bar_x, bar_y, bar_width, bar_height, graphics_make_color(60, 60, 60, 255));
+        
+        // Progress bar (yellow)
+        int progress_width = (bar_width * (test_index + 1)) / seq->test_count;
+        graphics_draw_box(disp, bar_x, bar_y, progress_width, bar_height, graphics_make_color(255, 255, 0, 255));
+        
+        test_config_t *test = &seq->tests[test_index];
+        
+        // Current test parameters - larger, more readable
+        graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
+        graphics_draw_text(disp, 20, 80, "CURRENT TONE:");
+        
+        char freq[64];
+        snprintf(freq, sizeof(freq), "Frequency:  %lu Hz", (unsigned long)test->frequency);
+        graphics_draw_text(disp, 30, 100, freq);
+        
+        char amp[64];
+        snprintf(amp, sizeof(amp), "Amplitude:  0x%04X", test->amplitude);
+        graphics_draw_text(disp, 30, 120, amp);
+        
+        char samples[64];
+        snprintf(samples, sizeof(samples), "Samples:    %u", test->sample_count);
+        graphics_draw_text(disp, 30, 140, samples);
+        
+        char duration[64];
+        snprintf(duration, sizeof(duration), "Wait Time:  %lu ms", (unsigned long)test->wait_ms);
+        graphics_draw_text(disp, 30, 160, duration);
+        
+        // Visual indicator for amplitude
+        graphics_set_color(graphics_make_color(100, 200, 100, 255), 0);
+        int amp_bar_width = (test->amplitude * 200) / 0x7FFF;
+        graphics_draw_box(disp, 30, 175, amp_bar_width, 6, graphics_make_color(100, 200, 100, 255));
+    } else {
+        // Test complete - don't show progress, just completion message
+        graphics_set_color(graphics_make_color(100, 255, 100, 255), 0);
+        graphics_draw_text(disp, 20, 70, "SEQUENCE COMPLETE!");
+        
+        graphics_set_color(graphics_make_color(200, 200, 200, 255), 0);
+        char complete[64];
+        snprintf(complete, sizeof(complete), "Completed all %d tests", seq->test_count);
+        graphics_draw_text(disp, 20, 100, complete);
+    }
+    
+    // Footer
+    graphics_set_color(graphics_make_color(180, 180, 180, 255), 0);
+    graphics_draw_text(disp, 20, 210, "Press B to abort and return to menu");
+}
+
+int main(void) {
+    // RESOLUTION_320x240 @ 16BPP
+    display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2, GAMMA_NONE, ANTIALIAS_RESAMPLE_FETCH_ALWAYS);
+    joypad_init();
+    timer_init();
+    
     while (1) {
-        joypad_poll();
-        joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-
+        int seq_count;
+        const test_sequence_t *sequences = get_test_sequences(&seq_count);
+        
         if (!running_test) {
-            if (keys.d_up && menu_selection > 0) menu_selection--;
-            if (keys.d_down && menu_selection < seq_count - 1) menu_selection++;
+            surface_t *disp = display_get();
+            draw_menu(disp);
+            display_show(disp);
+            
+            joypad_poll();
+            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+            
+            if (keys.d_up && menu_selection > 0) {
+                menu_selection--;
+            }
+            if (keys.d_down && menu_selection < seq_count - 1) {
+                menu_selection++;
+            }
             if (keys.a) {
                 running_test = 1;
-                run_test_sequence(menu_selection);
+                current_test_index = 0;  // Start from first test
             }
-            draw_menu(seq_count, sequences);
         } else {
-            if (keys.b) running_test = 0;
-            draw_running(menu_selection);
+            const test_sequence_t *seq = &sequences[menu_selection];
+            
+            // Check for B button to abort test sequence
+            joypad_poll();
+            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+            if (keys.b) {
+                running_test = 0;
+                current_test_index = 0;
+            } else if (current_test_index < seq->test_count) {
+                surface_t *disp = display_get();
+                
+                // Draw current test info
+                draw_running(disp, menu_selection, current_test_index);
+                display_show(disp);
+                
+                // Run this single test
+                run_single_test(menu_selection, current_test_index);
+                
+                // Move to next test
+                current_test_index++;
+            } else {
+                surface_t *disp = display_get();
+                
+                // All tests complete - show final screen briefly
+                draw_running(disp, menu_selection, current_test_index);
+                display_show(disp);
+                wait_ms(2000);
+                
+                // Return to menu
+                running_test = 0;
+                current_test_index = 0;
+            }
         }
-
-        // 4. Render console to our manual buffer
-        // Note: Modern console_render usually renders to the current display.
-        // If this doesn't show up, we may need to manually draw text.
-        console_render(); 
-
-        // 5. Sync the Cache
-        data_cache_hit_writeback(screen_buffer, sizeof(screen_buffer));
-
-        // 6. Manual VSync
-        vi_wait_vsync();
     }
 }
