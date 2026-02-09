@@ -31,4 +31,4 @@ The second test may be expanded for additional edge case testing. Currently test
 
 Evolved from earlier ROM generator scripts, currently available [here](https://www.mediafire.com/folder/wyso4tkwci9ln/N64-audio) along with samples, simpler test ROMs, and comparison images.
 
-Hardware documentation from [N64brew documentation](https://n64brew.dev/wiki/Audio_Interface) is invaluable.
+Hardware documentation from [N64brew](https://n64brew.dev/wiki/Audio_Interface) is invaluable.
