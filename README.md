@@ -1,4 +1,4 @@
-N64 Audio Interface Test ROM for hardware probing and emulator improvement. Performs Audio Interface DMA transfers to characterize the analog output and DAC behavior. Largely libdragon-based.
+N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement. Performs Audio Interface DMA transfers to characterize the analog output and DAC behavior. Largely libdragon-based.
 
 **Note: Turn your volume down.** 
 
@@ -13,7 +13,7 @@ Plays back PCM data with a constant amplitude of 0x7FFF for primary tests. The s
 
 **AI_BITRATE = AI_DACRATE / 66 (minimum 16) REG_AI_BITRATE = AI_BITRATE - 1**
 
-Because the N64 Audio Interface uses a clock divider, sample rate targets are approximate. The actual values written to the AI_DACRATE and AI_BITRATE registers equal the corresponding values in the above table, minus 1.
+Because the AI uses a clock divider, sample rate targets are approximate. The actual values written to the AI_DACRATE and AI_BITRATE registers equal the corresponding values in the above table, minus 1.
 
 Edge case behavior is WIP. Edge Cases: Includes maximum negative DC (0x8001), Nyquist torture tests (alternating 0x7FFF/0x8001 every sample), and low-frequency clock stress.
 
