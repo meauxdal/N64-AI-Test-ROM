@@ -128,13 +128,13 @@ int main(void) {
     timer_init();
     
     while (1) {
-        surface_t *disp = display_get();
-        
         int seq_count;
         const test_sequence_t *sequences = get_test_sequences(&seq_count);
         
         if (!running_test) {
+            surface_t *disp = display_get();
             draw_menu(disp);
+            display_show(disp);
             
             joypad_poll();
             joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
@@ -149,8 +149,6 @@ int main(void) {
                 running_test = 1;
                 current_test_index = 0;  // Start from first test
             }
-            
-            display_show(disp);
         } else {
             const test_sequence_t *seq = &sequences[menu_selection];
             
@@ -161,6 +159,8 @@ int main(void) {
                 running_test = 0;
                 current_test_index = 0;
             } else if (current_test_index < seq->test_count) {
+                surface_t *disp = display_get();
+                
                 // Draw current test info
                 draw_running(disp, menu_selection, current_test_index);
                 display_show(disp);
@@ -171,6 +171,8 @@ int main(void) {
                 // Move to next test
                 current_test_index++;
             } else {
+                surface_t *disp = display_get();
+                
                 // All tests complete - show final screen briefly
                 draw_running(disp, menu_selection, current_test_index);
                 display_show(disp);
