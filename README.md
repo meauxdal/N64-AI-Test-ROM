@@ -1,3 +1,5 @@
+<img width="1282" height="1036" alt="image" src="https://github.com/user-attachments/assets/083b5ff7-1be2-414d-8889-82622e0c3f75" />
+
 N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement. Performs DMA transfers to characterize analog output and DAC behavior. libdragon-based.
 
 **Note: turn your volume down.** 
