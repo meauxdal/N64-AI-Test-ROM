@@ -57,8 +57,8 @@ static test_sequence_t sequences[] = {
         3
     },
     {
-        "Legacy V5 Sweep",
-        "Exact 8176 byte payload from V5 scripts",
+        "Legacy Sweep",
+        "8176 byte payload from V5",
         legacy_v5_sweep,
         4
     }

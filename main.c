@@ -14,8 +14,8 @@ static void draw_menu(surface_t *disp) {
     
     // Header - Safe margin 25
     graphics_set_color(graphics_make_color(255, 255, 255, 255), 0);
-    graphics_draw_text(disp, 25, 20, "N64 Audio Interface Test ROM");
-    graphics_draw_text(disp, 25, 32, "----------------------------");
+    graphics_draw_text(disp, 25, 20, " N64 Audio Interface Test ROM");
+    graphics_draw_text(disp, 25, 32, "-------------------------");
     
     for (int i = 0; i < seq_count; i++) {
         uint32_t text_color = (i == menu_selection) ? 
