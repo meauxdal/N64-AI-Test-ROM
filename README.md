@@ -2,7 +2,7 @@ N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement.
 
 **Note: Turn your volume down.** 
 
-Plays back PCM data with a constant amplitude of 0x7FFF for primary tests. The standard sweep lasts 2048 samples per frequency, while the legacy sweep retains 4088 samples to match older v5 test ROMs. Each test is separated by a 1 second wait period to allow output capacitors to fully discharge on hardware.
+There are three tests. The first and third tests playback PCM data with a constant amplitude of 0x7FFF. The standard sweep lasts 2048 samples per frequency, while the legacy sweep retains 4088 samples to match older v5 test ROMs. Each test is separated by a 1 second wait period to allow output capacitors to fully discharge on hardware.
 
 | Sample Rate Target | AI_DACRATE | AI_BITRATE | Standard (2048 Samples) | Legacy V5 Sweep (4088 Samples) |
 | --- | --- | --- | --- | --- |
@@ -15,6 +15,6 @@ Plays back PCM data with a constant amplitude of 0x7FFF for primary tests. The s
 
 Because the AI uses a clock divider, sample rate targets are approximate. The actual values written to the AI_DACRATE and AI_BITRATE registers equal the corresponding values in the above table, minus 1.
 
-Edge case behavior is WIP. Edge Cases: Includes maximum negative DC (0x8001), Nyquist torture tests (alternating 0x7FFF/0x8001 every sample), and low-frequency clock stress.
+The second test may be expanded for additional edge case testing. Currently tests max negative DC (0x8001), Nyquist torture test (alternating 0x7FFF/0x8001 every sample), and a low-frequency clock stress. 
 
 Evolved from earlier ROM generator scripts, currently available [here](https://www.mediafire.com/folder/wyso4tkwci9ln/N64-audio) along with samples, simpler test ROMs, and comparison images
