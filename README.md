@@ -17,7 +17,7 @@ There are three tests. The first and third tests playback PCM data with a consta
 
 Formulae:
 
-**AI_DACRATE = ((2 * 48681818 / frequency) + 1) / 2**
+**AI_DACRATE = ((2 * 48681818 / Sample Rate Target) + 1) / 2**
 
 **AI_BITRATE = AI_DACRATE / 66 (the value of AI_BITRATE cannot exceed 16)**
 
