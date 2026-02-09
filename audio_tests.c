@@ -74,19 +74,19 @@ static test_config_t quick_test[] = {
 static test_sequence_t sequences[] = {
     {
         "Standard Sweep",
-        "24 tests: 4 freq x 2 amp x 3 lengths",
+        "24 tests (comprehensive)",
         standard_sweep,
         sizeof(standard_sweep) / sizeof(test_config_t)
     },
     {
         "Extended Sweep",
-        "12 tests: varied sample counts",
+        "12 tests (varied lengths)",
         extended_sweep,
         sizeof(extended_sweep) / sizeof(test_config_t)
     },
     {
         "Quick Test",
-        "4 tests: all frequencies, 16 samples",
+        "4 tests (all frequencies)",
         quick_test,
         sizeof(quick_test) / sizeof(test_config_t)
     }
