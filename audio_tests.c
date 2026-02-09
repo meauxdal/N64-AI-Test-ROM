@@ -20,7 +20,7 @@ static int16_t pcm_buffer[8192] __attribute__((aligned(8)));
 
 // --- Test Sequences ---
 
-// 1. DC Offset Sweep (Current Standard: 2048 samples)
+// 1. DC Offset Sweep (4096 bytes / 2048 samples)
 static test_config_t standard_dc_sweep[] = {
     { 22050, 0x7FFF, 2048, 1000 },
     { 32000, 0x7FFF, 2048, 1000 },
@@ -35,7 +35,7 @@ static test_config_t edge_cases[] = {
     { 3000,  0x3FFF, 16,   1000 }  // Slow Clock Stress
 };
 
-// 3. Legacy V5 Sweep (Matches EXACT v5/v6 behavior: 8176 bytes / 4088 samples)
+// 3. Legacy V5 Sweep (8176 bytes / 4088 samples)
 static test_config_t legacy_v5_sweep[] = {
     { 22050, 0x7FFF, 4088, 1000 },
     { 32000, 0x7FFF, 4088, 1000 },
