@@ -2,7 +2,7 @@ N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement.
 
 **Note: turn your volume down.** 
 
-There are three tests. The first and third tests playback PCM data with a constant amplitude of 0x7FFF. The standard test lasts 2048 samples per sample rate, while the legacy sweep retains 4088 samples to match older v5 test ROMs. Each test is separated by a 1 second wait period to allow output capacitors to fully discharge on hardware. The length and relevant AI values are indicated in the table below (Note the actual values written to the AI_DACRATE and AI_BITRATE registers equal the corresponding values in the below table, minus 1).
+There are three tests. The first and third tests playback PCM data with a constant amplitude of 0x7FFF. The standard test lasts 2048 samples per sample rate, while the legacy sweep retains 4088 samples to match older v5 test ROMs. Each test is separated by a 1 second wait period to allow output capacitors to fully discharge on hardware. The length and relevant AI values are indicated in the table below (note the actual values written to the AI_DACRATE and AI_BITRATE registers equal the corresponding values in the below table, minus 1).
 
 | Sample Rate Target | AI_DACRATE | AI_BITRATE | Standard (2048 Samples) | Legacy V5 Sweep (4088 Samples) |
 | --- | --- | --- | --- | --- |
