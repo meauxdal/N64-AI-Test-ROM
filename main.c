@@ -58,27 +58,27 @@ static void draw_running(surface_t *disp, int sequence_id, int test_index) {
     snprintf(title, sizeof(title), "%s", seq->name);
     graphics_draw_text(disp, 20, 20, title);
     
-    // Progress indicator
-    graphics_set_color(graphics_make_color(200, 200, 200, 255), 0);
-    char progress[64];
-    snprintf(progress, sizeof(progress), "Test %d of %d", test_index + 1, seq->test_count);
-    graphics_draw_text(disp, 20, 40, progress);
-    
-    // Draw progress bar
-    int bar_x = 20;
-    int bar_y = 55;
-    int bar_width = 280;
-    int bar_height = 8;
-    
-    // Background bar (grey)
-    graphics_set_color(graphics_make_color(60, 60, 60, 255), 0);
-    graphics_draw_box(disp, bar_x, bar_y, bar_width, bar_height, graphics_make_color(60, 60, 60, 255));
-    
-    // Progress bar (yellow)
-    int progress_width = (bar_width * (test_index + 1)) / seq->test_count;
-    graphics_draw_box(disp, bar_x, bar_y, progress_width, bar_height, graphics_make_color(255, 255, 0, 255));
-    
     if (test_index < seq->test_count) {
+        // Progress indicator
+        graphics_set_color(graphics_make_color(200, 200, 200, 255), 0);
+        char progress[64];
+        snprintf(progress, sizeof(progress), "Test %d of %d", test_index + 1, seq->test_count);
+        graphics_draw_text(disp, 20, 40, progress);
+        
+        // Draw progress bar
+        int bar_x = 20;
+        int bar_y = 55;
+        int bar_width = 280;
+        int bar_height = 8;
+        
+        // Background bar (grey)
+        graphics_set_color(graphics_make_color(60, 60, 60, 255), 0);
+        graphics_draw_box(disp, bar_x, bar_y, bar_width, bar_height, graphics_make_color(60, 60, 60, 255));
+        
+        // Progress bar (yellow)
+        int progress_width = (bar_width * (test_index + 1)) / seq->test_count;
+        graphics_draw_box(disp, bar_x, bar_y, progress_width, bar_height, graphics_make_color(255, 255, 0, 255));
+        
         test_config_t *test = &seq->tests[test_index];
         
         // Current test parameters - larger, more readable
@@ -106,9 +106,14 @@ static void draw_running(surface_t *disp, int sequence_id, int test_index) {
         int amp_bar_width = (test->amplitude * 200) / 0x7FFF;
         graphics_draw_box(disp, 30, 175, amp_bar_width, 6, graphics_make_color(100, 200, 100, 255));
     } else {
-        // Test complete
+        // Test complete - don't show progress, just completion message
         graphics_set_color(graphics_make_color(100, 255, 100, 255), 0);
-        graphics_draw_text(disp, 20, 100, "SEQUENCE COMPLETE!");
+        graphics_draw_text(disp, 20, 70, "SEQUENCE COMPLETE!");
+        
+        graphics_set_color(graphics_make_color(200, 200, 200, 255), 0);
+        char complete[64];
+        snprintf(complete, sizeof(complete), "Completed all %d tests", seq->test_count);
+        graphics_draw_text(disp, 20, 100, complete);
     }
     
     // Footer
