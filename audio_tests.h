@@ -20,10 +20,10 @@ typedef struct {
     int test_count;
 } test_sequence_t;
 
-// Returns: 1 if user aborted (Pressed B), 0 if completed normally
+// 1 if user aborted (Pressed B)
 int run_single_test(int sequence_id, int test_index);
 
-// Performs a wait that can be interrupted by the B button
+// wait that can be aborted by the B button
 int wait_ms_with_abort(uint32_t ms);
 
 const test_sequence_t* get_test_sequences(int *count);
