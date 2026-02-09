@@ -1,8 +1,6 @@
-
-
 N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement. Performs DMA transfers to characterize analog output and DAC behavior. libdragon-based.
 
-**Note: turn your volume down.** 
+**Note: turn your volume down.** The tests are loud.
 
 <img width="1282" height="1036" alt="image" src="https://github.com/user-attachments/assets/083b5ff7-1be2-414d-8889-82622e0c3f75"/>
 
@@ -31,4 +29,6 @@ Because the AI uses a clock divider, actual sample rate output is an approximati
 
 The second test may be expanded for additional edge case testing. Currently tests max negative DC (0x8001), Nyquist torture test (alternating 0x7FFF/0x8001 every sample), and a low-frequency clock stress. 
 
-Evolved from earlier ROM generator scripts, currently available [here](https://www.mediafire.com/folder/wyso4tkwci9ln/N64-audio) along with samples, simpler test ROMs, and comparison images
+Evolved from earlier ROM generator scripts, currently available [here](https://www.mediafire.com/folder/wyso4tkwci9ln/N64-audio) along with samples, simpler test ROMs, and comparison images.
+
+Hardware documentation from [N64brew documentation](https://n64brew.dev/wiki/Audio_Interface) is invaluable.
