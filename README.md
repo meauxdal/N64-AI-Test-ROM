@@ -4,7 +4,7 @@ N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement.
 
 <img width="1282" height="1036" alt="image" src="https://github.com/user-attachments/assets/083b5ff7-1be2-414d-8889-82622e0c3f75"/>
 
-There are three tests. The first and third tests playback PCM data with a constant amplitude of 0x7FFF. The standard test lasts 2048 samples per sample rate, while the legacy sweep retains 4088 samples to match older v5 test ROMs. Each test is separated by a 1 second wait period to allow output capacitors to fully discharge on hardware. The length and relevant AI values are indicated in the table below.
+There are three tests sequences. The first and third sequences playback PCM data with a constant amplitude of 0x7FFF. The standard test lasts 2048 samples per sample rate, while the legacy sweep retains 4088 samples to match older v5 test ROMs. Each test is separated by a 1 second wait period to allow output capacitors to fully discharge on hardware. The length and relevant AI values are indicated in the table below.
 
 | Sample Rate Target | AI_DACRATE | AI_BITRATE | Standard (2048 Samples) | Legacy V5 Sweep (4088 Samples) |
 | --- | --- | --- | --- | --- |
@@ -27,7 +27,7 @@ Note the actual values written to the AI_DACRATE and AI_BITRATE registers equal 
 
 Because the AI uses a clock divider, actual sample rate output is an approximation derived from the system clock and will vary slightly from the target frequency depending on how closely the integer division aligns. 
 
-The second test may be expanded for additional edge case testing. Currently tests max negative DC (0x8001), Nyquist torture test (alternating 0x7FFF/0x8001 every sample), and a low-frequency clock stress. 
+The second test sequence may be expanded for additional edge case testing. Currently tests max negative DC (0x8001), Nyquist torture test (alternating 0x7FFF/0x8001 every sample), and a low-frequency clock stress. 
 
 Evolved from earlier ROM generator scripts, currently available [here](https://www.mediafire.com/folder/wyso4tkwci9ln/N64-audio) along with samples, simpler test ROMs, and comparison images.
 
