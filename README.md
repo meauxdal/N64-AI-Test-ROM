@@ -15,16 +15,19 @@ There are three tests. The first and third tests playback PCM data with a consta
 | 44100 Hz	| 1104 | 16 | 46.44 ms	| 92.70 ms | 
 | 48000 Hz	| 1014 | 15 | 42.67 ms	| 85.17 ms |
 
-
 Formulae:
+
 **AI_DACRATE = ((2 * 48681818 / frequency) + 1) / 2**
+
 **AI_BITRATE = AI_DACRATE / 66 (the value of AI_BITRATE cannot exceed 16)**
 
 Note the actual values written to the AI_DACRATE and AI_BITRATE registers equal the corresponding values in the above table, minus 1.
+
 **REG_AI_DACRATE = AI_DACRATE - 1**
+
 **REG_AI_BITRATE = AI_BITRATE - 1**
 
-Because the AI uses a clock divider, sample rate targets are approximate. 
+Because the AI uses a clock divider, actual sample rate output is an approximation derived from the system clock and will vary slightly from the target frequency depending on how closely the integer division aligns. 
 
 The second test may be expanded for additional edge case testing. Currently tests max negative DC (0x8001), Nyquist torture test (alternating 0x7FFF/0x8001 every sample), and a low-frequency clock stress. 
 
