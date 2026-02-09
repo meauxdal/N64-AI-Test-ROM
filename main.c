@@ -113,7 +113,7 @@ static void draw_running(surface_t *disp, int sequence_id, int test_index) {
     
     // Footer
     graphics_set_color(graphics_make_color(180, 180, 180, 255), 0);
-    graphics_draw_text(disp, 20, 210, "Test auto-returns to menu");
+    graphics_draw_text(disp, 20, 210, "Press B to abort and return to menu");
 }
 
 int main(void) {
@@ -149,7 +149,13 @@ int main(void) {
         } else {
             const test_sequence_t *seq = &sequences[menu_selection];
             
-            if (current_test_index < seq->test_count) {
+            // Check for B button to abort test sequence
+            joypad_poll();
+            joypad_buttons_t keys = joypad_get_buttons_pressed(JOYPAD_PORT_1);
+            if (keys.b) {
+                running_test = 0;
+                current_test_index = 0;
+            } else if (current_test_index < seq->test_count) {
                 // Draw current test info
                 draw_running(disp, menu_selection, current_test_index);
                 display_show(disp);
