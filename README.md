@@ -1,4 +1,4 @@
-N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement. Performs DMA transfers to characterize analog output and DAC behavior. Largely libdragon-based.
+N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement. Performs DMA transfers to characterize analog output and DAC behavior. libdragon-based.
 
 **Note: turn your volume down.** 
 
