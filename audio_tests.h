@@ -20,9 +20,13 @@ typedef struct {
     int test_count;
 } test_sequence_t;
 
-void calculate_dac_rates(uint32_t frequency, uint32_t *dacrate, uint32_t *bitrate);
-void run_single_test(int sequence_id, int test_index);
-void run_test_sequence(int sequence_id);
+// Returns: 1 if user aborted (Pressed B), 0 if completed normally
+int run_single_test(int sequence_id, int test_index);
+
+// Performs a wait that can be interrupted by the B button
+int wait_ms_with_abort(uint32_t ms);
+
 const test_sequence_t* get_test_sequences(int *count);
+void calculate_dac_rates(uint32_t frequency, uint32_t *dacrate, uint32_t *bitrate);
 
 #endif
