@@ -1,3 +1,5 @@
+**Note 2026-02-21: This test currently works as expected on ares, but doesn't work properly on hardware (tests 1 and 3 fail seemingly non-deterministically). This has implications for ares accuracy, but I need to understand the discrepancy in more detail before I file a bug report. Older test ROMs (v4, v5, v6) work correctly on hardware.**
+
 N64 Audio Interface Test (AI) ROM for hardware probing and emulator improvement. Performs DMA transfers to characterize analog output and DAC behavior. libdragon-based.
 
 **Note: turn your volume down.** The tests are loud.
