@@ -81,13 +81,11 @@ static void irq_test_init(uint32_t count) {
 
     register_exception_handler(ai_irq_handler);
     IO_WRITE(MI_INTR_MASK_REG, MI_MASK_SET_AI);
-    enable_interrupts();
 }
 
 static void irq_test_teardown(void) {
     IO_WRITE(MI_INTR_MASK_REG, MI_MASK_CLR_AI);
     register_exception_handler(NULL);
-    disable_interrupts();
 }
 
 // -------------------------------------------------------------------------
