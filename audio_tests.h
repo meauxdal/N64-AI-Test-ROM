@@ -1,7 +1,7 @@
 #ifndef AUDIO_TESTS_H
 #define AUDIO_TESTS_H
 
-#include <stdint.h>
+#include <libdragon.h>
 
 #define CLOCKRATE           48681818
 #define MAX_TESTS           32
@@ -42,5 +42,6 @@ void calculate_dac_rates(uint32_t frequency, uint32_t *dacrate, uint32_t *bitrat
 
 // --- IRQ test API ---
 irq_test_result_t run_irq_test(void);
+void draw_irq_result(surface_t *disp, irq_test_result_t *r);
 
 #endif
