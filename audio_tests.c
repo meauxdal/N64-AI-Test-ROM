@@ -1,6 +1,5 @@
 #include "audio_tests.h"
 #include <libdragon.h>
-#include <stdint.h>
 
 // --- AI Register Definitions ---
 #define AI_BASE         0xA4500000
@@ -11,12 +10,6 @@
 #define AI_DACRATE      (AI_BASE + 0x10)
 #define AI_BITRATE      (AI_BASE + 0x14)
 
-// --- MI Register Definitions ---
-#define MI_INTR_REG         0xA4300008  // read: which IRQs are pending
-#define MI_INTR_MASK_REG    0xA430000C  // write: set/clear IRQ masks
-#define MI_AI_INTR          (1 << 2)    // bit 2 = AI interrupt pending
-#define MI_MASK_SET_AI      (1 << 5)    // bit 5 = enable AI IRQ
-#define MI_MASK_CLR_AI      (1 << 4)    // bit 4 = disable AI IRQ
 
 #define IO_WRITE(addr, val) (*(volatile uint32_t*)(addr) = (val))
 #define IO_READ(addr)       (*(volatile uint32_t*)(addr))
@@ -51,14 +44,10 @@ void raw_ai_trigger(void *pcm_buf, uint32_t length, uint32_t target_freq) {
 
 // -------------------------------------------------------------------------
 // ai_irq_handler
-// Called by libdragon exception dispatch on any interrupt.
-// Guards on MI_INTR_REG to confirm this is an AI IRQ — VI and timer
-// interrupts are also live from display_init/timer_init.
+// Registered via register_AI_handler — fires only for AI IRQ.
+// libdragon routes and clears the interrupt before calling us.
 // -------------------------------------------------------------------------
-static void ai_irq_handler(exception_t *ex) {
-    // Confirm this is actually an AI IRQ
-    if (!(IO_READ(MI_INTR_REG) & MI_AI_INTR)) return;
-
+static void ai_irq_handler(void) {
     // Clear AI IRQ — any write to AI_STATUS clears it on hardware
     IO_WRITE(AI_STATUS, 0);
 
@@ -76,16 +65,16 @@ static void ai_irq_handler(exception_t *ex) {
 // irq_test_init / irq_test_teardown
 // -------------------------------------------------------------------------
 static void irq_test_init(uint32_t count) {
-    irq_count       = 0;
-    expected_count  = count;
+    irq_count      = 0;
+    expected_count = count;
 
-    register_exception_handler(ai_irq_handler);
-    IO_WRITE(MI_INTR_MASK_REG, MI_MASK_SET_AI);
+    register_AI_handler(ai_irq_handler);
+    set_AI_interrupt(1);
 }
 
 static void irq_test_teardown(void) {
-    IO_WRITE(MI_INTR_MASK_REG, MI_MASK_CLR_AI);
-    register_exception_handler(NULL);
+    set_AI_interrupt(0);
+    unregister_AI_handler(ai_irq_handler);
 }
 
 // -------------------------------------------------------------------------
